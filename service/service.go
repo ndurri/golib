@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"errors"
-	"github.com/golib/log"
+	"github.com/ndurri/golib/log"
 	"io"
 	"net/http"
 	"net/url"
