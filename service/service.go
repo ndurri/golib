@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"errors"
-	"hmrc-proxy/lib/log"
+	"github.com/golib/log"
 	"io"
 	"net/http"
 	"net/url"
