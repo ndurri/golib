@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"errors"
-	"github.com/ndurri/golib/log"
 	"io"
 	"net/http"
 	"net/url"
@@ -47,7 +46,6 @@ func parseURL(endpoint string, pathParams NVP, urlParams NVP) (*url.URL, error) 
 	}
 	serviceURL, err := url.Parse(parsed)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	if urlParams != nil {
@@ -63,14 +61,6 @@ var (
 	ServerError     = errors.New("5xx Server Error")
 	UnexpectedError = errors.New("Unexpected Response")
 )
-
-func dumpResponse(res *http.Response, body []byte) {
-	log.Error(errors.New(res.Status))
-	for name, values := range res.Header {
-		log.Infofmt("%s: %s", name, strings.Join(values, ","))
-	}
-	log.Info(string(body))
-}
 
 func Get(endpoint string, headers NVP, pathParams NVP, urlParams NVP) ([]byte, error) {
 	return call(http.MethodGet, endpoint, headers, pathParams, urlParams, nil)
@@ -89,10 +79,8 @@ func call(method string, endpoint string, headers NVP, pathParams NVP, urlParams
 	if err != nil {
 		return nil, err
 	}
-	log.Infofmt("Calling: %s %s", method, serviceURL.String())
 	req, err := http.NewRequest(method, serviceURL.String(), body)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	for key, value := range headers {
@@ -100,21 +88,17 @@ func call(method string, endpoint string, headers NVP, pathParams NVP, urlParams
 	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
-	log.Infofmt("%s %s returned %v", method, serviceURL.String(), res.StatusCode)
 
 	defer res.Body.Close()
 	resbody, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 	if res.StatusCode >= 200 && res.StatusCode <= 299 {
 		return resbody, nil
 	} else {
-		dumpResponse(res, resbody)
 		if res.StatusCode == 401 {
 			return nil, AuthError
 		} else if res.StatusCode == 404 {
